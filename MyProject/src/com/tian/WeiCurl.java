@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,21 +19,22 @@ public class WeiCurl {
 		
 		
 		String URL = "https://m.weibo.cn/api/container/getIndex?uid=1827861545&luicode=10000011&lfid=100103type%3D1%26q%3D%E5%8D%BF%E5%9B%BD%E5%8D%BF%E5%9F%8E&type=uid&value=1827861545&containerid=1076031827861545";
-		
-		String resultStr = httpGet(URL);
-		String res = processInfo(resultStr);
+	      WeiCurl weiCurl = new WeiCurl();
+
+		String resultStr = weiCurl.httpGet(URL);
+		List<String> res = weiCurl.processInfo(resultStr);
 
 	}
 	
 
 
-	public static String processInfo(String str) {
+	public List<String> processInfo(String str) {
 		
+		List<String> reList = new ArrayList<String>();
 		JSONObject json = JSON.parseObject(str);
 		JSONObject data = (JSONObject)json.getJSONObject("data");
 		JSONArray arr = (JSONArray)data.getJSONArray("cards");
 		for (int i = 0; i < arr.size(); i++) {
-			System.out.println("==========================");
 			JSONObject tempJson = ((JSONObject)arr.get(i)).getJSONObject("mblog");
 			String tempStr = tempJson.getString("raw_text");
 			if(tempStr == null) {
@@ -40,14 +43,13 @@ public class WeiCurl {
 		        Matcher matcher = p.matcher(tempTxt);
 		        // 把字母替换成 0
 		        String qx_new = matcher.replaceAll("");
-		        
-				System.out.println(qx_new);
+		        reList.add(qx_new);
 			}else {
-				System.out.println(tempStr);
+				reList.add(tempStr);
 			}
 		}
 		System.out.println(arr.size());
-		return null;
+		return reList;
 	}
 	
 	
@@ -57,7 +59,7 @@ public class WeiCurl {
 	 * @param url 发送请求的UR 请求参数，请求参数应该是 name1=value1&name2=value2 的形式。
 	 * @return URL 所代表远程资源的响应结果
 	 */
-	public static String httpGet(String URL) {
+	public String httpGet(String URL) {
 		String result = "";
 		BufferedReader in = null;
 		try {

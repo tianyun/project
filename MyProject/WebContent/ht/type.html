@@ -15,7 +15,9 @@
 		</style>
 	<body>
 		<div class="dvcontent">
-
+			<div id = "te">
+			
+			</div>
 			<div>
 				<!--tab start-->
 				<div class="tabs">
@@ -33,9 +35,9 @@
 									<table class="table" id="tbRecord">
 										<thead>
 											<tr>
-												<th>分类编号</th>
-												<th>分类名称</th>
-												<th>分类描述</th>
+												<th>微博编号</th>
+												<th>微博内容</th>
+												<th>发布时间</th>
 												<th>备注</th>
 												<th>编辑</th>
 												<th>删除</th>
@@ -123,8 +125,12 @@
 			<script>
 				//文档加载
 				$(document).ready(function(){
-
-
+					$.getJSON("http://localhost:8080/MyProject/WeiboList.do",function(result){
+						$.each(result, function(i, field){
+							console.log(field + " ");
+						});
+					});
+	
 				//滑动分类
 				$(function() {
 					$(".tabs").slide({ trigger: "click" });
