@@ -48,7 +48,7 @@
 												<!--  <th>删除</th>-->
 											</tr>
 										</thead>
-										<tbody id=“databody”>
+										<tbody id="databody">
 											
 											
 										</tbody>
@@ -132,21 +132,10 @@
 					 $("#weiboNameEdit").click(function(){
 						 var weiboName = $("#weiboName").val();
 						 $.getJSON("/MyProject/editWeiboId.do?weiboName="+weiboName,function(result){
-								alert(result.status);
-							});
-					 });
-					
-					
-					//加载投递邮箱
-					$.getJSON("/MyProject/getMail.do",function(result){
-						$("#postMail").val(result.mail);						
-					});
-					
-					//修改投递邮箱
-					 $("#mailEdit").click(function(){
-						 var mailV = $("#postMail").val();
-						 $.getJSON("/MyProject/editMail.do?mail="+mailV,function(result){
-							 	if("ok"==result.status){
+							 if("ok"==result.status){
+								 	alert("微博名称修改完成");
+								 	
+								 	$("#databody").empty();
 							 		//重新加载列表
 									var a = 0;
 									$.getJSON("/MyProject/WeiboList.do",function(result){
@@ -168,13 +157,29 @@
 							                //$trTemp.append("<td class=\"delete\"><button onclick=\"btn_delete(1)\"><i class=\"icon-trash bigger-120\"></i>删除</button></td>");
 										
 							                // $("#J_TbData").append($trTemp);
-							                $trTemp.appendTo("#“databody”");
+							                $trTemp.appendTo("#databody");
 											
 											//console.log(field + " ");
 										});
 									});
 							 		
-							 	}
+							 	}							
+							 });
+					 });
+					
+					
+					//加载投递邮箱
+					$.getJSON("/MyProject/getMail.do",function(result){
+						$("#postMail").val(result.mail);						
+					});
+					
+					//修改投递邮箱
+					 $("#mailEdit").click(function(){
+						 var mailV = $("#postMail").val();
+						 $.getJSON("/MyProject/editMail.do?mail="+mailV,function(result){
+							 if("ok"==result.status){
+								 alert("投递邮箱修改成功");
+							 }
 							 	
 							});
  					 });
@@ -201,7 +206,7 @@
 			                //$trTemp.append("<td class=\"delete\"><button onclick=\"btn_delete(1)\"><i class=\"icon-trash bigger-120\"></i>删除</button></td>");
 						
 			                // $("#J_TbData").append($trTemp);
-			                $trTemp.appendTo("#“databody”");
+			                $trTemp.appendTo("#databody");
 							
 							//console.log(field + " ");
 						});

@@ -36,18 +36,14 @@ public class WeiboList extends HttpServlet {
 
 	@RequestMapping(value = "/WeiboList.do", method = { RequestMethod.GET })
 	public void getList(HttpServletResponse response) throws IOException {
-		System.out.println("get request");
 		// 设置响应内容类型
 		response.setContentType("application/json;charset=utf-8");
 
 		// 获取微博地址
 		String name = weiCurl.getProperties(WeiboList.class.getResource("/").getPath()+"weiboURL.properties", "weiboURL");
 		String uid = weiCurl.getWeiboUid(name);
-		System.out.println(uid);
-
 		String containerid = weiCurl.getWeiboPro(uid);
 		String URL = "https://m.weibo.cn/api/container/getIndex?type=uid&value="+uid+"&containerid="+containerid;
-		System.out.println(URL);
 		String resultStr = weiCurl.httpGet(URL);
 		List<JSONObject> reList = weiCurl.processInfo(resultStr);
 
@@ -66,11 +62,11 @@ public class WeiboList extends HttpServlet {
 		JSONObject reJson = new JSONObject();
 		// 获取邮箱
 		try {
-			InputStream inStream = WeiCurl.class.getResourceAsStream("/mail.properties");
+			InputStream inStream = WeiboList.class.getResourceAsStream("/mail.properties");
 			Properties prop = new Properties();
 			prop.load(inStream);
 			String mailURL = prop.getProperty("mail_1");
-			LOGGER.info("获取参数 mailURL ："+mailURL);
+			LOGGER.info("从 mail.properties 获取参数 mailURL ："+mailURL);
 			reJson.put("mail", mailURL);
 			response.getWriter().write(reJson.toString());
 		} catch (IOException e) {
@@ -86,11 +82,11 @@ public class WeiboList extends HttpServlet {
 		JSONObject reJson = new JSONObject();
 		// 获取邮箱
 		try {
-			InputStream inStream = WeiCurl.class.getResourceAsStream("/weiboURL.properties");
+			InputStream inStream = WeiboList.class.getResourceAsStream("/weiboURL.properties");
 			Properties prop = new Properties();
 			prop.load(inStream);
 			String weiboName = prop.getProperty("weiboURL");
-			LOGGER.info("获取参数 weiboName ："+weiboName);
+			LOGGER.info("从 weiboURL.properties 获取参数 weiboName ："+weiboName);
 			reJson.put("weiboName", weiboName);
 			response.getWriter().write(reJson.toString());
 		} catch (IOException e) {
@@ -104,13 +100,13 @@ public class WeiboList extends HttpServlet {
 		// 设置响应内容类型
 		response.setContentType("application/json;charset=utf-8");
 		// 获取邮箱
-		String weiboName = request.getParameter("weiboName");
+		String weiboName=new String(request.getParameter("weiboName").getBytes("ISO-8859-1"),"UTF-8");
 		LOGGER.info("获取参数 weiboName：" + weiboName);
 		JSONObject reJson = new JSONObject();
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream(WeiCurl.class.getResource("/").getPath() + "weiboURL.properties"));
-			OutputStream fos = new FileOutputStream(WeiCurl.class.getResource("/").getPath() + "/weiboURL.properties");
+			props.load(new FileInputStream(WeiboList.class.getResource("/").getPath() + "weiboURL.properties"));
+			OutputStream fos = new FileOutputStream(WeiboList.class.getResource("/").getPath() + "/weiboURL.properties");
 			props.setProperty("weiboURL", weiboName);
 			df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			props.store(fos, "Update " + weiboName + " " + df.format(new Date()));
@@ -134,8 +130,8 @@ public class WeiboList extends HttpServlet {
 		JSONObject reJson = new JSONObject();
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream(WeiCurl.class.getResource("/").getPath() + "mail.properties"));
-			OutputStream fos = new FileOutputStream(WeiCurl.class.getResource("/").getPath() + "/mail.properties");
+			props.load(new FileInputStream(WeiboList.class.getResource("/").getPath() + "mail.properties"));
+			OutputStream fos = new FileOutputStream(WeiboList.class.getResource("/").getPath() + "/mail.properties");
 			props.setProperty("mail_1", mail);
 			df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			props.store(fos, "Update " + mail + " " + df.format(new Date()));

@@ -49,16 +49,15 @@ public class WeiCurl {
 		String uid = weiCurl.getWeiboUid(name);
 		String containerid = weiCurl.getWeiboPro(uid);
 		String URL = "https://m.weibo.cn/api/container/getIndex?type=uid&value="+uid+"&containerid="+containerid;
+		
 		// 获取微博内容并处理
 		String resultStr = weiCurl.httpGet(URL);
 		List<JSONObject> res = weiCurl.processInfo(resultStr);
 		JSONObject mailJSON = res.get(0);
 
 		// 判断是否有更新
-		String weiboDate = weiCurl.getProperties(filePath+"weiboContent.properties", "date");
 		String weiboContent = weiCurl.getProperties(filePath+"weiboContent.properties", "content");
 		try {
-
 			if (weiboContent.equals(mailJSON.getString("content"))) {
 				// 重新写入content
 				Properties props = new Properties();
@@ -128,7 +127,7 @@ public class WeiCurl {
 		}
 		LOGGER.info("=======================");
 
-		LOGGER.info("processInfo 处理完，获取信息长度："+arr.size());
+		LOGGER.info("从 processInfo 处理完，获取微博信息条数："+arr.size());
 		return reList;
 	}
 
@@ -189,7 +188,7 @@ public class WeiCurl {
 		JSONArray cards = (JSONArray) ((JSONObject) json.getJSONObject("data")).getJSONArray("cards");
 		JSONArray card_group =((JSONObject)cards.get(0)).getJSONArray("card_group");
 		JSONObject tar = (JSONObject)card_group.get(0);
-		System.out.println(tar.getJSONObject("user").getString("id"));
+
 		return tar.getJSONObject("user").getString("id");
 	}
 	
