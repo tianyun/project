@@ -16,8 +16,8 @@
 	<body>
 		<div class="dvcontent">
 			<label style="margin:20px 30px 3px" for="user-name" class="">微博名称：</label>
-			<input type="text" required="" value="卿国卿城" placeholder="请输入微博名称" name="name">&nbsp&nbsp
-			<button onclick="btn_edit" style="color:#ffffff; background-color:#2468a9; border:0px; padding:3px 5px;">修改</button><br>
+			<input id="weiboName" type="text" required="" value="卿国卿城" placeholder="请输入微博名称" name="name">&nbsp&nbsp
+			<button id ="weiboNameEdit" style="color:#ffffff; background-color:#2468a9; border:0px; padding:3px 5px;">修改</button><br>
 			<br>
 			<label style="margin:0px 30px" for="user-name" class="">投递邮箱：</label>
 			<input id="postMail" type="text" required="" value="814405826@qq.com" placeholder="请输入投递邮箱" name="name">&nbsp&nbsp
@@ -124,25 +124,65 @@
 				//文档加载
 				$(document).ready(function(){
 					//加载微博名称
+					$.getJSON("/MyProject/getWeiboID.do",function(result){
+						$("#weiboName").val(result.weiboName);						
+					});
+					
+					//修改微博名称
+					 $("#weiboNameEdit").click(function(){
+						 var weiboName = $("#weiboName").val();
+						 $.getJSON("/MyProject/editWeiboId.do?weiboName="+weiboName,function(result){
+								alert(result.status);
+							});
+					 });
 					
 					
 					//加载投递邮箱
-					$.getJSON("http://localhost:8080/MyProject/getMail.do",function(result){
+					$.getJSON("/MyProject/getMail.do",function(result){
 						$("#postMail").val(result.mail);						
 					});
 					
 					//修改投递邮箱
 					 $("#mailEdit").click(function(){
 						 var mailV = $("#postMail").val();
-						 $.getJSON("http://localhost:8080/MyProject/editMail.do?mail="+mailV,function(result){
-								alert(result.status);
+						 $.getJSON("/MyProject/editMail.do?mail="+mailV,function(result){
+							 	if("ok"==result.status){
+							 		//重新加载列表
+									var a = 0;
+									$.getJSON("/MyProject/WeiboList.do",function(result){
+										$.each(result, function(i, field){
+											//动态创建一个tr行标签,并且转换成jQuery对象
+							                var $trTemp = $("<tr></tr>");
+
+											//字太多做处理
+											if(field.length>25){
+												field = field.substring(0,25)+"...";
+											}
+											
+							                //往行里面追加 td单元格
+							                $trTemp.append("<td>"+ (++a) +"</td>");
+							                $trTemp.append("<td>"+ field.content +"</td>");
+							                $trTemp.append("<td>"+ field.date +"</td>");
+							                $trTemp.append("<td>"+ "是" +"</td>");
+							                //$trTemp.append("<td class=\"edit\"><button onclick=\"btn_edit(1)\"><i class=\"icon-edit bigger-120\"></i>编辑</button></td>");
+							                //$trTemp.append("<td class=\"delete\"><button onclick=\"btn_delete(1)\"><i class=\"icon-trash bigger-120\"></i>删除</button></td>");
+										
+							                // $("#J_TbData").append($trTemp);
+							                $trTemp.appendTo("#“databody”");
+											
+											//console.log(field + " ");
+										});
+									});
+							 		
+							 	}
+							 	
 							});
  					 });
 					
 					
 					//加载列表
 					var a = 0;
-					$.getJSON("http://localhost:8080/MyProject/WeiboList.do",function(result){
+					$.getJSON("/MyProject/WeiboList.do",function(result){
 						$.each(result, function(i, field){
 							//动态创建一个tr行标签,并且转换成jQuery对象
 			                var $trTemp = $("<tr></tr>");

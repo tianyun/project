@@ -25,55 +25,66 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.log4j.Logger;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 public class WeiCurl {
+	protected static final Logger LOGGER = Logger.getLogger(WeiCurl.class);
 
 	public static void main(String[] args) {
-
+		String filePath = "";
+		if(args.length>0) {
+			filePath = args[0];
+		}else {
+			filePath = WeiCurl.class.getResource("/").getPath();
+		}
 		WeiCurl weiCurl = new WeiCurl();
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 		// 获取微博地址
-		String URL = weiCurl.getProperties("weiboURL.properties", "weiboURL");
+		String name = weiCurl.getProperties(filePath+"weiboURL.properties", "weiboURL");
+		String uid = weiCurl.getWeiboUid(name);
+		String containerid = weiCurl.getWeiboPro(uid);
+		String URL = "https://m.weibo.cn/api/container/getIndex?type=uid&value="+uid+"&containerid="+containerid;
 		// 获取微博内容并处理
 		String resultStr = weiCurl.httpGet(URL);
 		List<JSONObject> res = weiCurl.processInfo(resultStr);
 		JSONObject mailJSON = res.get(0);
 
 		// 判断是否有更新
-		String weiboDate = weiCurl.getProperties("weiboContent.properties", "date");
-		String weiboContent = weiCurl.getProperties("weiboContent.properties", "content");
+		String weiboDate = weiCurl.getProperties(filePath+"weiboContent.properties", "date");
+		String weiboContent = weiCurl.getProperties(filePath+"weiboContent.properties", "content");
 		try {
 
-			if (weiboContent.equals(mailJSON.getString("content")) && weiboDate.equals(mailJSON.getString("date"))) {
+			if (weiboContent.equals(mailJSON.getString("content"))) {
 				// 重新写入content
 				Properties props = new Properties();
-				props.load(new FileInputStream(WeiCurl.class.getResource("/").getPath() + "weiboContent.properties"));
+				props.load(new FileInputStream(filePath + "weiboContent.properties"));
 				OutputStream fos = new FileOutputStream(
-						WeiCurl.class.getResource("/").getPath() + "/weiboContent.properties");
+						filePath + "/weiboContent.properties");
 				props.store(fos, "Update date: " + " " + df.format(new Date()));
-				System.out.println("时间更新重新写入完成");
+				LOGGER.info(filePath+ "/weiboContent.properties  时间更新重新写入完成");
 				fos.close();
 			} else {
 				// 获取邮箱
-				String mail = weiCurl.getProperties("mail.properties", "mail_1");
+				String mail = weiCurl.getProperties(filePath+"mail.properties", "mail_1");
 				// 发送邮件
 				String content = "内容：" + mailJSON.getString("content") + "\n时间：" + mailJSON.getString("date");
 				weiCurl.sendMail(mail, content);
-				System.out.println("邮件 "+mail+" 发送成功"+df.format(new Date()));
+				LOGGER.info("邮件 "+mail+" 发送成功"+df.format(new Date()));
 
 				// 重新写入content
 				Properties props = new Properties();
-				props.load(new FileInputStream(WeiCurl.class.getResource("/").getPath() + "weiboContent.properties"));
+				props.load(new FileInputStream(filePath + "weiboContent.properties"));
 				OutputStream fos = new FileOutputStream(
-						WeiCurl.class.getResource("/").getPath() + "/weiboContent.properties");
+						filePath + "/weiboContent.properties");
 				props.setProperty("date", mailJSON.getString("date"));
 				props.setProperty("content", mailJSON.getString("content"));
 				props.store(fos, "Update " + mail + " " + df.format(new Date()));
-				System.out.println("重新写入完成"+df.format(new Date()));
+				LOGGER.info(filePath+ "/weiboContent.properties 内容重新写入完成"+df.format(new Date()));
 				fos.close();
 
 			}
@@ -110,14 +121,14 @@ public class WeiCurl {
 				tempdata.put("content", tempStr);
 			}
 			tempdata.put("date", tempJson.getString("created_at"));
-			//System.out.println("=======================");
-			//System.out.println(tempdata.getString("date"));
+			//LOGGER.info("=======================");
+			//LOGGER.info(tempdata.getString("date"));
 			reList.add(tempdata);
 			tempdata = null;
 		}
-		System.out.println("=======================");
+		LOGGER.info("=======================");
 
-		System.out.println("获取信息长度："+arr.size());
+		LOGGER.info("processInfo 处理完，获取信息长度："+arr.size());
 		return reList;
 	}
 
@@ -149,7 +160,7 @@ public class WeiCurl {
 			}
 
 		} catch (Exception e) {
-			System.out.println("发送GET请求出现异常！" + e);
+			LOGGER.info("发送GET请求出现异常！" + e);
 			e.printStackTrace();
 		}
 		// 使用finally块来关闭输入流
@@ -166,6 +177,41 @@ public class WeiCurl {
 	}
 
 	/**
+	 * 通过微博名获取uid
+	 * https://m.weibo.cn/api/container/getIndex?containerid=100103type%3D1%26q%3D湖南大学&page_type=searchall
+	 * @param name
+	 * @return
+	 */
+	public String getWeiboUid(String name) {
+		String url = "https://m.weibo.cn/api/container/getIndex?containerid=100103type%3D1%26q%3D"+name+"&page_type=searchall";
+		String result = httpGet(url);
+		JSONObject json = JSON.parseObject(result);
+		JSONArray cards = (JSONArray) ((JSONObject) json.getJSONObject("data")).getJSONArray("cards");
+		JSONArray card_group =((JSONObject)cards.get(0)).getJSONArray("card_group");
+		JSONObject tar = (JSONObject)card_group.get(0);
+		System.out.println(tar.getJSONObject("user").getString("id"));
+		return tar.getJSONObject("user").getString("id");
+	}
+	
+	/**
+	 * 通过uid 返回containerid
+	 * https://m.weibo.cn/api/container/getIndex?type=uid&value=2712377910&containerid=1005052712377910
+	 * @param uid
+	 * @return
+	 */
+	public String getWeiboPro(String uid) {
+		String url = "https://m.weibo.cn/api/container/getIndex?type=uid&value="+uid+"&containerid=100505"+uid;
+		String result = httpGet(url);
+		JSONObject json = JSON.parseObject(result);
+		JSONObject data = (JSONObject) json.getJSONObject("data").getJSONObject("tabsInfo");
+		JSONArray arr = (JSONArray) data.getJSONArray("tabs");
+		
+		String containerid = ((JSONObject)arr.get(1)).getString("containerid");
+		return containerid;
+	}
+	
+	
+	/**
 	 * 发送邮件 
 	 * 
 	 * @param mail
@@ -180,7 +226,7 @@ public class WeiCurl {
 		properties.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 		properties.setProperty("mail.smtp.port", "465");
 		properties.setProperty("mail.smtp.socketFactory.port", "465");
-		System.out.println("邮箱配置完成");
+		LOGGER.info("邮箱配置完成");
 
 		// 建立两点之间的链接
 		Session session = Session.getInstance(properties, new Authenticator() {
@@ -189,7 +235,7 @@ public class WeiCurl {
 				return new PasswordAuthentication("814405826@qq.com", "vzvvsurcvbmdbbaf");
 			}
 		});
-		System.out.println("邮箱之间链接建立");
+		LOGGER.info("邮箱之间链接建立");
 		// 创建邮件对象
 		Message message = new MimeMessage(session);
 		// 设置发件人
@@ -210,7 +256,7 @@ public class WeiCurl {
 			Transport transport = session.getTransport();
 			transport.connect("814405826@qq.com", "tianyunfclw123");
 			Transport.send(message);
-			System.out.println("===========================\n邮件发送成功");
+			LOGGER.info("===========================\n邮件发送成功");
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		} finally {
@@ -231,7 +277,7 @@ public class WeiCurl {
 
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream(WeiCurl.class.getResource("/").getPath() + file));
+			props.load(new FileInputStream(file));
 			return props.getProperty(key);
 
 		} catch (IOException e) {
