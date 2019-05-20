@@ -54,11 +54,16 @@ public class WeiCurl {
 		String resultStr = weiCurl.httpGet(URL);
 		List<JSONObject> res = weiCurl.processInfo(resultStr);
 		JSONObject mailJSON = res.get(0);
+		JSONObject mailJSON2 = res.get(1);
 
 		// 判断是否有更新
 		String weiboContent = weiCurl.getProperties(filePath+"weiboContent.properties", "content");
+		String weiboContent2 = weiCurl.getProperties(filePath+"weiboContent.properties", "content2");
+		System.out.println(weiboContent+"----"+weiboContent2);
+		System.out.println(mailJSON.getString("content")+"----"+mailJSON2.getString("content"));
+
 		try {
-			if (weiboContent.equals(mailJSON.getString("content"))) {
+			if (weiboContent.equals(mailJSON.getString("content"))&&weiboContent2.equals(mailJSON2.getString("content"))) {
 				// 重新写入content
 				Properties props = new Properties();
 				props.load(new FileInputStream(filePath + "weiboContent.properties"));
@@ -71,7 +76,7 @@ public class WeiCurl {
 				// 获取邮箱
 				String mail = weiCurl.getProperties(filePath+"mail.properties", "mail_1");
 				// 发送邮件
-				String content = "内容：" + mailJSON.getString("content") + "\n时间：" + mailJSON.getString("date");
+				String content = "你关注的："+name+"  发微博啦<br><br><br><br><br>内容：" + mailJSON.getString("content") + "<br><br><br>时间：" + mailJSON.getString("date");
 				weiCurl.sendMail(mail, content);
 				LOGGER.info("邮件 "+mail+" 发送成功"+df.format(new Date()));
 
@@ -82,6 +87,8 @@ public class WeiCurl {
 						filePath + "/weiboContent.properties");
 				props.setProperty("date", mailJSON.getString("date"));
 				props.setProperty("content", mailJSON.getString("content"));
+				props.setProperty("date2", mailJSON2.getString("date"));
+				props.setProperty("content2", mailJSON2.getString("content"));
 				props.store(fos, "Update " + mail + " " + df.format(new Date()));
 				LOGGER.info(filePath+ "/weiboContent.properties 内容重新写入完成"+df.format(new Date()));
 				fos.close();
@@ -254,7 +261,7 @@ public class WeiCurl {
 			message.setSubject("微博提醒");
 			// 设置邮件正文 第二个参数是邮件发送的类型
 
-			message.setContent("我的卿卿，你的卿卿，发微博啦 <br><br>" + content+"<br><br><br>"+dateNowStr, "text/html;charset=UTF-8");
+			message.setContent(content+"<br>"+dateNowStr, "text/html;charset=UTF-8");
 			// 发送一封邮件
 			Transport transport = session.getTransport();
 			transport.connect("814405826@qq.com", "tianyunfclw123");
