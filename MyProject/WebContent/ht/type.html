@@ -131,7 +131,7 @@
 					//修改微博名称
 					 $("#weiboNameEdit").click(function(){
 						 var weiboName = $("#weiboName").val();
-						 $.getJSON("/MyProject/editWeiboId.do?weiboName="+weiboName,function(result){
+						 $.getJSON(encodeURI("/MyProject/editWeiboId.do?weiboName="+encodeURI(weiboName)),function(result){
 							 if("ok"==result.status){
 								 	alert("微博名称修改完成");
 								 	

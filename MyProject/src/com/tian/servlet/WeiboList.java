@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -99,8 +100,11 @@ public class WeiboList extends HttpServlet {
 	public void editWeiboId(HttpServletResponse response, HttpServletRequest request) throws IOException {
 		// 设置响应内容类型
 		response.setContentType("application/json;charset=utf-8");
-		// 获取邮箱
-		String weiboName=new String(request.getParameter("weiboName").getBytes("ISO-8859-1"),"UTF-8");
+		String weiboName = request.getParameter("weiboName");  
+		System.out.println(weiboName+"----------");
+
+		// 获取微博名称
+		 weiboName = URLDecoder.decode(weiboName, "utf-8");
 		LOGGER.info("获取参数 weiboName：" + weiboName);
 		JSONObject reJson = new JSONObject();
 		Properties props = new Properties();

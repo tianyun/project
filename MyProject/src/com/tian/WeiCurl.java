@@ -106,24 +106,28 @@ public class WeiCurl {
 		JSONObject data = (JSONObject) json.getJSONObject("data");
 		JSONArray arr = (JSONArray) data.getJSONArray("cards");
 		for (int i = 0; i < arr.size(); i++) {
-			JSONObject tempJson = ((JSONObject) arr.get(i)).getJSONObject("mblog");
-			String tempStr = tempJson.getString("raw_text");
-			JSONObject tempdata = new JSONObject();
-			if (tempStr == null) {
+			try {
+				JSONObject tempJson = ((JSONObject) arr.get(i)).getJSONObject("mblog");
+				
+				String tempStr ="";
+				JSONObject tempdata = new JSONObject();
 				String tempTxt = tempJson.getString("text");
 				Pattern p = Pattern.compile("<([\\s\\S]*?)>"); // 匹配数字的正则表达式
 				Matcher matcher = p.matcher(tempTxt);
 				// 把字母替换成 空
 				tempStr = matcher.replaceAll("");
 				tempdata.put("content", tempStr);
-			} else {
-				tempdata.put("content", tempStr);
+				tempdata.put("date", tempJson.getString("created_at"));
+				//LOGGER.info("=======================");
+				//LOGGER.info(tempdata.getString("date"));
+				reList.add(tempdata);
+				tempdata = null;
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+				// TODO: handle exception
 			}
-			tempdata.put("date", tempJson.getString("created_at"));
-			//LOGGER.info("=======================");
-			//LOGGER.info(tempdata.getString("date"));
-			reList.add(tempdata);
-			tempdata = null;
+			
 		}
 		LOGGER.info("=======================");
 
