@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="top"
+    android:orientation="vertical"
+    android:layout_margin="20dp">
+
+
+    <Button
+        android:id="@+id/ble_btn_scan"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="扫描蓝牙消息"
+        android:gravity="center"
+        android:textAllCaps="false"/>
+
+    <TextView
+        android:id="@+id/tv_mac_address_note"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="扫描结果："
+        android:textColor="@color/colorGrayDark"
+        android:layout_gravity="left"
+        android:textSize="20dp" />
+
+    <TextView
+        android:id="@+id/tv_title_A"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#000"
+        android:textSize="20sp"
+        android:text="正在加载..."
+        android:gravity="center">
+    </TextView>
+</LinearLayout>
